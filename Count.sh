@@ -1,29 +1,18 @@
-#This had a countdown timer till the next update
 #!/bin/bash
 
-echo "Written for my autistic dispatcher with love by Colby & a LLM controlled by the CCP"
+echo "[*] Launching Farmingdale Train Display"
+echo "[*] Setting up Python virtual environment..."
 
-
-# ========== SYSTEM PREP ==========
-echo "[*] Installing required system packages..."
-sudo apt update
-sudo apt install -y python3 python3-venv python3-tk
-
-# ========== VENV SETUP ==========
-echo "[*] Creating Python virtual environment..."
+# Set up venv
 python3 -m venv farmingdale-env
 source farmingdale-env/bin/activate
 
-# ========== PYTHON DEPENDENCIES ==========
-echo "[*] Installing Python dependencies..."
+echo "[*] Installing required Python packages..."
 pip install --upgrade pip
 pip install playwright
-
-echo "[*] Installing Playwright browser..."
 python3 -m playwright install chromium
 
-# ========== WRITE PYTHON SCRIPT ==========
-echo "[*] Writing Python GUI script..."
+echo "[*] Writing Python script..."
 cat > farmingdale_live.py << 'EOF'
 from playwright.sync_api import sync_playwright
 import tkinter as tk
@@ -43,11 +32,6 @@ def fetch_train_info():
 
 def parse_train_data(raw_text):
     lines = [line.strip() for line in raw_text.splitlines() if line.strip()]
-    print("\n=========== RAW SCRAPED TEXT ===========")
-    for i, line in enumerate(lines):
-        print(f"{i}: {line}")
-    print("========================================\n")
-
     try:
         time_index = lines.index("PLAT") + 1
         arrival_time = lines[time_index]
@@ -79,9 +63,9 @@ def countdown_timer():
 root = tk.Tk()
 root.title("Next LIRR Train at Farmingdale")
 root.geometry("800x300")
-root.configure(bg="#f0f0f0")  # light gray background
+root.configure(bg="#f0f0f0")
 
-# Main train info
+# Main Labels
 time_label = tk.Label(root, text="Arrival Time: ", font=("Helvetica", 32), bg="#f0f0f0")
 time_label.pack(pady=10)
 
@@ -91,19 +75,20 @@ destination_label.pack(pady=10)
 train_number_label = tk.Label(root, text="Train Status:", font=("Helvetica", 32), bg="#f0f0f0")
 train_number_label.pack(pady=10)
 
-# Subtle countdown in bottom left
+# Countdown bottom-left
 countdown_label = tk.Label(root, text="", font=("Helvetica", 12), bg="#f0f0f0", fg="#b0b0b0", anchor="w", justify="left")
 countdown_label.pack(side="left", padx=15, pady=5)
 
-# Launch
+# Credit bottom-right
+credit_label = tk.Label(root, text="Made by Colby K", font=("Helvetica", 12), bg="#f0f0f0", fg="#a0a0a0", anchor="e", justify="right")
+credit_label.pack(side="right", padx=15, pady=5)
+
+# Start
 seconds_until_update = UPDATE_INTERVAL_SEC
 update_display()
 countdown_timer()
 root.mainloop()
 EOF
 
-chmod +x farmingdale_live.py
-
-# ========== RUN APP ==========
-echo "[*] Launching the Farmingdale Train Display..."
+echo "[*] Starting GUI..."
 python3 farmingdale_live.py
